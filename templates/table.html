@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Address Tracker</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        #urlInput {
+            margin-bottom: 10px;
+        }
+
+        #addButton {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        function addSite() {
+            var urlInput = $("#urlInput").val();
+            $.ajax({
+                type: 'POST',
+                url: '/add_site',
+                data: {url: urlInput},
+                success: function(response) {
+                    updateTable(response.url, response.ip_addresses);
+                    $("#urlInput").val("");
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        function updateTable(url, ipAddresses) {
+            var table = $("#dataTable");
+            var row = $("<tr>");
+            row.append($("<td>").text(url));
+            row.append($("<td>").text(ipAddresses.join(", ")));
+            row.append($("<td>").html("<button onclick='deleteRow(this)'>Удалить</button>"));
+            table.append(row);
+        }
+
+        function deleteRow(button) {
+            var row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        function copyToClipboard() {
+            var ips = document.querySelectorAll("#dataTable td:nth-child(2)");
+            var ipString = Array.from(ips).map(td => td.innerHTML).join(", ");
+            navigator.clipboard.writeText(ipString);
+            alert("IP-адреса скопированы в буфер обмена!");
+        }
+    </script>
+</head>
+<body>
+
+    <label for="urlInput">Добавить сайт:</label>
+    <input type="text" id="urlInput" placeholder="Введите URL">
+
+    <button id="addButton" onclick="addSite()">Добавить</button>
+
+    <table id="dataTable">
+        <tr>
+            <th>Сайт</th>
+            <th>IP-адреса</th>
+            <th>Действие</th>
+        </tr>
+    </table>
+
+    <button onclick="copyToClipboard()">Скопировать в буфер обмена</button>
+
+</body>
+</html>
